@@ -13,3 +13,8 @@ delay:
 	subs x0, x0, #1
 	bne delay
 	ret
+
+.globl emergency_halt
+emergency_halt:
+    wfe
+    b emergency_halt
