@@ -14,14 +14,14 @@ proc_hang:
 	b 	proc_hang
 
 master:
-	mov x6, x0
+	mov w6, w0
 
 	adr	x0, bss_begin
 	adr	x1, bss_end
 	sub	x1, x1, x0
 	bl 	memzero
 
-	mov x0, x6
+	mov w0, w6
 
 	mov	sp, #LOW_MEMORY
 	bl	kernel_main
