@@ -35,7 +35,7 @@ $(BD)/%.elf:
 	$(VERB) echo Linking $@
 	$(VERB) $(LLD) -o $@ $(filter %.o,$^) $(patsubst %,-T %,$(filter %.ld,$^))
 
-$(BD)/kernel8.elf: $(BD)/main_c.o
+$(BD)/kernel8.elf: $(BD)/boot_s.o $(BD)/main_c.o $(SD)/linker.ld $(BD)/mm_s.o $(BD)/utils_s.o
 
 $(BD)/%.img: $(BD)/%.elf
 	$(VERB) echo Creating kernel8.img
