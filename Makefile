@@ -10,9 +10,9 @@ SD = $(SRC_DIR)
 
 TARGET_TRIPLE 	?= aarch64-none-elf
 
-CLANG_OPS = -Wall -nostdlib -ffreestanding -mgeneral-regs-only -Iinclude -mcpu=cortex-a72+nosimd --target=${TARGET_TRIPLE} -MMD
-ASM_OPS = $(CLANGOPS)
-C_OPS = $(CLANGOPS)
+CLANG_OPS := -Wall -nostdlib -ffreestanding -mgeneral-regs-only -Iinclude -mcpu=cortex-a72+nosimd --target=${TARGET_TRIPLE} -MMD
+ASM_OPS := $(CLANG_OPS)
+C_OPS := $(CLANG_OPS)
 
 ifndef VERBOSE
     VERB := @
@@ -33,7 +33,7 @@ $(BD)/%_s.o: $(SD)/%.S
 
 $(BD)/%.elf:
 	$(VERB) echo Linking $@
-	$(VERB) $(LLD) -o $@ $^
+	$(VERB) $(LLD) -o $@ $(filter %.o,$^) $(patsubst %,-T %,$(filter %.ld,$^))
 
 $(BD)/kernel8.elf: $(BD)/main_c.o
 
