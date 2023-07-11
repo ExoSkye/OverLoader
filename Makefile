@@ -18,7 +18,7 @@ ifndef VERBOSE
     VERB := @
 endif
 
-.PHONY: all clean
+.PHONY: all clean qemu qemu-debug
 .SUFFIXES:
 
 $(BD)/%_c.o: $(SD)/%.c
@@ -44,6 +44,10 @@ $(BD)/%.img: $(BD)/%.elf
 clean:
 	$(VERB) rm -rf $(BD)
 
+qemu: $(BD)/kernel8.img
+	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img
 
+qemu-debug: $(BD)/kernel8.img
+	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -S -s
 
 all: $(BD)/kernel8.img
