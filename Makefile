@@ -44,12 +44,43 @@ $(BD)/%.img: $(BD)/%.elf
 clean:
 	$(VERB) rm -rf $(BD)
 
-qemu: $(BD)/kernel8.img
-	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img
+$(BD)/KusOS.img: $(BD)/kernel8.img src/config.txt third-party/raspi-firmware/boot/*
+	$(VERB) echo Building the image
 
-qemu-debug: $(BD)/kernel8.img
-	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -S -s
+	$(VERB) echo -- Making the image file \($(BD)/KusOS.img\)
+	$(VERB) dd if=/dev/zero of=$(BD)/tmp.img count=64 bs=1M
+	$(VERB) echo -e "unit: sectors\n/dev/hdc1 : Id=0c" | sfdisk $(BD)/tmp.img > /dev/null
+	$(VERB) mkfs.vfat -F 32 $(BD)/tmp.img > /dev/null
+
+	$(VERB) echo -- Copying files to $(BD)/staging
+	$(VERB) mkdir -p $(BD)/staging
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2710-rpi-3-b.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2710-rpi-3-b-plus.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2710-rpi-cm3.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2711-rpi-400.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2711-rpi-cm4.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bcm2711-rpi-cm4s.dtb $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/*.dat $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/*.elf $(BD)/staging/
+	$(VERB) cp third-party/raspi-firmware/boot/bootcode.bin $(BD)/staging/
+	$(VERB) cp src/config.txt $(BD)/staging/
+	$(VERB) cp $(BD)/kernel8.img $(BD)/staging/kernel8.img
+
+	$(VERB) echo -- Gzipping the kernel
+	$(VERB) gzip $(BD)/staging/kernel8.img
+	$(VERB) mv $(BD)/staging/kernel8.img.gz $(BD)/staging/kernel8.img
+
+	$(VERB) echo -- Copying files into the image
+	$(VERB) mcopy -i $(BD)/tmp.img $(BD)/staging/* ::/
+
+	$(VERB) mv $(BD)/tmp.img $(BD)/KusOS.img
+	$(VERB) echo Done!
+
+qemu: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+
+qemu-debug: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb -S -s
 
 all: $(BD)/kernel8.img
-
-# TODO: Add image creation code
