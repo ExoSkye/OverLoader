@@ -1,0 +1,4 @@
+[submodule "third-party/raspi-firmware"]
+	path = third-party/raspi-firmware
+	url = https://github.com/raspberrypi/firmware
+	shallow = true
