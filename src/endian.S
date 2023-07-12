@@ -5,7 +5,7 @@ swap_endian_16:
 
 .globl swap_endian_32
 swap_endian_32:
-    rev x0,x0
+    rev w0,w0
     ret
 
 .globl swap_endian_64
