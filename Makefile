@@ -78,9 +78,11 @@ $(BD)/KusOS.img: $(BD)/kernel8.img src/config.txt third-party/raspi-firmware/boo
 	$(VERB) echo Done!
 
 qemu: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+	$(VERB) echo Starting QEMU
 	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
 
 qemu-debug: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+	$(VERB) echo Starting QEMU in debug mode
 	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb -S -s
 
 all: $(BD)/kernel8.img
