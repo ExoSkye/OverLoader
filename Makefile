@@ -9,6 +9,7 @@ BD = $(BUILD_DIR)
 SD = $(SRC_DIR)
 
 TARGET_TRIPLE 	?= aarch64-none-elf
+RASPI_MACHINE_NAME ?= raspi4b2g
 
 CLANG_OPS := -Wall -nostdlib -ffreestanding -mgeneral-regs-only -Iinclude -mcpu=cortex-a72+nosimd --target=${TARGET_TRIPLE} -MMD -O0 -g
 ASM_OPS := $(CLANG_OPS)
@@ -18,7 +19,7 @@ ifndef VERBOSE
     VERB := @
 endif
 
-.PHONY: all clean qemu qemu-debug
+.PHONY: all clean qemu qemu-debug sd
 .SUFFIXES:
 
 $(BD)/%_c.o: $(SD)/%.c
@@ -35,7 +36,7 @@ $(BD)/%.elf:
 	$(VERB) echo Linking $@
 	$(VERB) $(LLD) -o $@ $(filter %.o,$^) $(patsubst %,-T %,$(filter %.ld,$^))
 
-$(BD)/kernel8.elf: $(BD)/boot_s.o $(BD)/main_c.o $(SD)/linker.ld $(BD)/mm_s.o $(BD)/utils_s.o $(BD)/dtb_c.o $(BD)/endian_s.o
+$(BD)/kernel8.elf: $(BD)/boot_s.o $(BD)/main_c.o $(BD)/mm_s.o $(BD)/utils_s.o $(SD)/linker.ld
 
 $(BD)/%.img: $(BD)/%.elf
 	$(VERB) echo Creating kernel8.img
@@ -44,10 +45,10 @@ $(BD)/%.img: $(BD)/%.elf
 clean:
 	$(VERB) rm -rf $(BD)
 
-$(BD)/KusOS.img: $(BD)/kernel8.img src/config.txt third-party/raspi-firmware/boot/*
+$(BD)/OverLoader.img: $(BD)/kernel8.img src/config.txt third-party/raspi-firmware/boot/*
 	$(VERB) echo Building the image
 
-	$(VERB) echo -- Making the image file \($(BD)/KusOS.img\)
+	$(VERB) echo -- Making the image file \($@\)
 	$(VERB) dd if=/dev/zero of=$(BD)/tmp.img count=64 bs=1M
 	$(VERB) echo -e "unit: sectors\n/dev/hdc1 : Id=0c" | sfdisk $(BD)/tmp.img > /dev/null
 	$(VERB) mkfs.vfat -F 32 $(BD)/tmp.img > /dev/null
@@ -79,10 +80,11 @@ $(BD)/KusOS.img: $(BD)/kernel8.img src/config.txt third-party/raspi-firmware/boo
 
 qemu: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
 	$(VERB) echo Starting QEMU
-	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
+	$(VERB) qemu-system-aarch64 -machine $(RASPI_MACHINE_NAME) -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb -s
 
 qemu-debug: $(BD)/kernel8.img third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb
 	$(VERB) echo Starting QEMU in debug mode
-	$(VERB) qemu-system-aarch64 -machine raspi4 -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb -S -s
+	$(VERB) qemu-system-aarch64 -machine $(RASPI_MACHINE_NAME) -kernel $(BD)/kernel8.img -dtb third-party/raspi-firmware/boot/bcm2711-rpi-4-b.dtb -S -s
 
 all: $(BD)/kernel8.img
+sd: $(BD)/OverLoader.img

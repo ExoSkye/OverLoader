@@ -25,5 +25,5 @@ master:
 	mov w0, w10
 
 	mov	sp, #LOW_MEMORY
-	bl	kernel_main
+	bl	overloader_main
 	b 	proc_hang		// should never come here
